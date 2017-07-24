@@ -1,3 +1,4 @@
+# runtime
 gmod是一个模块化的服务器框架,gmod本身仅仅是驱动各个模块运行,来完成各个模块的初始化,正常运行及停止工作。
 
 gmod运行时共有四个状态init,wait,run,end,分别对应Moder接口Init(),Wait(),Run(),End(),响应gmod模块都必须实现这个接口

@@ -1,3 +1,4 @@
+# gnet
   gnet提供了对建立tcp连接的简单封装及tcp消息包的收发,其中Processor接口允许你自定义消息包，此接口中Marshal的作用是把消息序列化为二进制类型，然后通过对应的tcp连接发送出去,相对的tcp连接调用Unmarshal提取对应的消息来完成服务器之间或者玩家与服务器之间的消息交换.
 
   gnet是完全独立于gmod的，这意味着gnet可以用在任何通过tcp交换信息的地方，例如一个简单的client<->server通信的例子(相应的代码在examples/gnet 文件夹下)：
