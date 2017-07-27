@@ -9,53 +9,69 @@ import (
 )
 
 const (
-	MaxCmdLen       = 0xffff // 最大消息长度
-	CompCmdLen      = 320    // 压缩消息限定
-	ForceCompCmdLen = 4096   // 强制压缩消息限定
+	maxCmdLen       = 0xffff // 最大消息长度
+	compCmdLen      = 320    // 压缩消息限定
+	forceCompCmdLen = 4096   // 强制压缩消息限定
 
-	PacketHeadLen      = 4
-	PacketHeadCompFlag = 1 << 7 //压缩标识
-	PacketHeadContFlag = 1 << 6 //连续标识
-	PacketHeadCmdMask  = 63     // 正常Cmd的Mask
+	packetHeadLen      = 4
+	packetHeadCompFlag = 1 << 7 //压缩标识
+	packetHeadContFlag = 1 << 6 //连续标识
+	packetHeadCmdMask  = 63     // 正常Cmd的Mask
 )
 
-type PacketHead struct {
+type packetHead struct {
 	Cmd   uint8
 	Param uint8
 	Size  uint16
 }
 
-type PacketRead struct {
-	PacketHead
-	Comp    bool // 是否压缩
-	Cont    bool // 是否连续
-	HasHead bool // 是否已读
-	Buf     *bytes.Buffer
+type packetRead struct {
+	packetHead
+	comp    bool // 是否压缩
+	cont    bool // 是否连续
+	hasHead bool // 是否已读
+	buf     *bytes.Buffer
 }
 
-func (x *PacketRead) ParseCmd() {
-	x.Comp = (x.Cmd & PacketHeadCompFlag) > 0
-	x.Cont = (x.Cmd & PacketHeadContFlag) > 0
-	x.Cmd = x.Cmd & PacketHeadCmdMask
+func (x *packetRead) ParseCmd() {
+	x.comp = (x.Cmd & packetHeadCompFlag) > 0
+	x.cont = (x.Cmd & packetHeadContFlag) > 0
+	x.Cmd = x.Cmd & packetHeadCmdMask
 }
 
-type Processor struct {
-	buf  bytes.Buffer
-	read PacketRead
+type processor struct {
+	buf       bytes.Buffer
+	read      packetRead
+	marshal   func(interface{}) ([]byte, error)
+	unmarshal func([]byte, interface{}) error
 }
 
-func (this *Processor) Marshal(i interface{}) ([]byte, error) {
+func (this *processor) Unmarshal(bts []byte, v interface{}) error {
+	if this.unmarshal != nil {
+		return this.unmarshal(bts, v)
+	}
+	return json.Unmarshal(bts, v)
+}
+
+func (this *processor) Marshal(i interface{}) ([]byte, error) {
+	if this.marshal != nil {
+		return this.marshal(i)
+	}
+	return json.Marshal(i)
+}
+
+func (this *processor) Pack(i interface{}) ([]byte, error) {
 	if msg, ok := i.(Cmder); ok {
 		msg.Init()
-		bts, err := json.Marshal(msg)
+		bts, err := this.Marshal(msg)
 		if err != nil {
 			log.Printf("序列化化错误,%v", err)
 			return nil, err
 		}
 
 		c := msg.GetCmd()
-		if len(bts) > CompCmdLen {
-			/*c |= PacketHeadCompFlag
+		if len(bts) > compCmdLen {
+			/*c |= packetHeadCompFlag
 			bts = glib.Compress(bts)*/
 		}
 
@@ -63,16 +79,16 @@ func (this *Processor) Marshal(i interface{}) ([]byte, error) {
 		for i := 1; i > 0; {
 			tmp := bts
 			var cont uint8
-			if len(bts) >= MaxCmdLen {
-				tmp = bts[:MaxCmdLen]
-				bts = bts[MaxCmdLen:]
-				cont = PacketHeadContFlag
+			if len(bts) >= maxCmdLen {
+				tmp = bts[:maxCmdLen]
+				bts = bts[maxCmdLen:]
+				cont = packetHeadContFlag
 			} else {
 				i = 0
 			}
-			BinWrite(buf, c|cont)
-			BinWrite(buf, msg.GetParam())
-			BinWrite(buf, uint16(len(tmp)))
+			binWrite(buf, c|cont)
+			binWrite(buf, msg.GetParam())
+			binWrite(buf, uint16(len(tmp)))
 			buf.Write(tmp)
 		}
 		return buf.Bytes(), nil
@@ -81,38 +97,38 @@ func (this *Processor) Marshal(i interface{}) ([]byte, error) {
 	}
 }
 
-func (this *Processor) UnMarshal(p []byte, mq chan interface{}) (n int, err error) {
+func (this *processor) UnPack(p []byte, mq chan interface{}) (n int, err error) {
 	this.buf.Write(p)
 	for {
-		if !this.read.HasHead {
-			if this.buf.Len() < PacketHeadLen {
+		if !this.read.hasHead {
+			if this.buf.Len() < packetHeadLen {
 				break
 			}
 
-			BinRead(&this.buf, &this.read.Cmd)
-			BinRead(&this.buf, &this.read.Param)
-			BinRead(&this.buf, &this.read.Size)
-			this.read.HasHead = true
+			binRead(&this.buf, &this.read.Cmd)
+			binRead(&this.buf, &this.read.Param)
+			binRead(&this.buf, &this.read.Size)
+			this.read.hasHead = true
 			this.read.ParseCmd()
 		}
 		if this.buf.Len() < int(this.read.Size) {
 			break
 		}
-		this.read.HasHead = false
+		this.read.hasHead = false
 
 		data := this.buf.Next(int(this.read.Size))
-		if this.read.Cont {
-			if this.read.Buf == nil {
-				this.read.Buf = &bytes.Buffer{}
+		if this.read.cont {
+			if this.read.buf == nil {
+				this.read.buf = &bytes.Buffer{}
 			}
-			this.read.Buf.Write(data)
+			this.read.buf.Write(data)
 			continue
-		} else if this.read.Buf != nil && this.read.Buf.Len() > 0 {
-			this.read.Buf.Write(data)
-			data = this.read.Buf.Bytes()
-			this.read.Buf = nil
+		} else if this.read.buf != nil && this.read.buf.Len() > 0 {
+			this.read.buf.Write(data)
+			data = this.read.buf.Bytes()
+			this.read.buf = nil
 		}
-		if this.read.Comp {
+		if this.read.comp {
 			/*var err error
 			if data, err = glib.UnCompress(data); err != nil {
 				log.Printf("消息反序列化,解压缩错误:%v,%v,%v", this.read.Cmd, this.read.Param, len(data))
@@ -130,14 +146,25 @@ func (this *Processor) UnMarshal(p []byte, mq chan interface{}) (n int, err erro
 	return
 }
 
-func BinRead(buf *bytes.Buffer, data interface{}) {
+func binRead(buf *bytes.Buffer, data interface{}) {
 	binary.Read(buf, binary.LittleEndian, data)
 }
 
-func BinWrite(buf *bytes.Buffer, data interface{}) {
+func binWrite(buf *bytes.Buffer, data interface{}) {
 	binary.Write(buf, binary.LittleEndian, data)
 }
 
-func NewProcessor() *Processor {
-	return &Processor{}
+var marshal func(interface{}) ([]byte, error)
+var unmarshal func([]byte, interface{}) error
+
+func SetMarshal(m func(interface{}) ([]byte, error)) {
+	marshal = m
+}
+
+func SetUnmarshal(u func([]byte, interface{}) error) {
+	unmarshal = u
+}
+
+func NewProcessor() *processor {
+	return &processor{marshal: marshal, unmarshal: unmarshal}
 }

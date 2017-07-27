@@ -24,7 +24,7 @@ func Test_PackDrawCmd(t *testing.T) {
 	t.Log(string(bts))
 	ch := make(chan interface{}, 0)
 	go func() {
-		processor.UnMarshal(bts, ch)
+		processor.Unmarshal(bts, ch)
 	}()
 	itfc := <-ch
 	log := t.Log

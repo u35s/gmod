@@ -1,7 +1,10 @@
 package gsrvm
 
 import (
+	"net"
+
 	"github.com/u35s/gmod"
+	"github.com/u35s/gmod/glib/gnet"
 )
 
 var srvm *serverManager
@@ -23,6 +26,10 @@ func AddToConnect(s ToConnectServer) {
 
 func SetDealMsgFunc(h func(interface{})) {
 	srvm.dealMsgFunc = h
+}
+
+func SetNewAgentFunc(h func(net.Conn) *gnet.Agent) {
+	srvm.newAgentFunc = h
 }
 
 func SendCmdToServer(tp, name string, msg interface{}) {

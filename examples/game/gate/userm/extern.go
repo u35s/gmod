@@ -36,7 +36,3 @@ func Mod() gmod.Moder {
 	}
 	return userm
 }
-
-func init() {
-	defaultRoute()
-}

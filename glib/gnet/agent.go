@@ -20,7 +20,7 @@ func (this *Agent) send() error {
 		if cmd == nil {
 			return nil
 		}
-		bts, err := this.Processor.Marshal(cmd)
+		bts, err := this.Processor.Pack(cmd)
 		if err != nil {
 			return err
 		}
@@ -39,7 +39,7 @@ func (this *Agent) recive() error {
 		if err != nil {
 			return err
 		}
-		_, err = this.Processor.UnMarshal(bts[:num], this.ReciveChannel)
+		_, err = this.Processor.UnPack(bts[:num], this.ReciveChannel)
 		if err != nil {
 			return err
 		}

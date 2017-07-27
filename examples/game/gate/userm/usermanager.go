@@ -17,6 +17,8 @@ type userManager struct {
 func (this *userManager) Init() {
 	this.verifings = make(map[uint]*user)
 	this.accids = make(map[uint]*user)
+
+	defaultRoute()
 }
 
 func (this *userManager) Run() {

@@ -19,9 +19,11 @@ type serverManager struct {
 	addServerChannel chan *ConnectedServer
 	serverMsgChannel chan interface{}
 	connectedServers ConnectedServerSlcMap
-	dealMsgFunc      func(interface{})
 	toListen         []ToListenServer
 	toConnect        []ToConnectServer
+
+	newAgentFunc func(net.Conn) *gnet.Agent
+	dealMsgFunc  func(interface{})
 }
 
 func (this *serverManager) Init() {
@@ -113,7 +115,7 @@ func (this *serverManager) connectTo(addr, tp, name, localTp, localName string) 
 		log.Printf("connect to %v err:%v", addr, err)
 		return err
 	}
-	agent := gnet.NewAgent(conn, gcmd.NewProcessor())
+	agent := this.newAgentFunc(conn)
 	agent.SetReciveChannel(this.serverMsgChannel)
 	var send testcmd.CmdServer_establishConnection
 	send.Type = localTp
@@ -134,7 +136,7 @@ func (this *serverManager) listenTo(addr string) error {
 }
 
 func (this *serverManager) handleConn(conn net.Conn) {
-	agent := gnet.NewAgent(conn, gcmd.NewProcessor())
+	agent := this.newAgentFunc(conn)
 	select {
 	case v := <-agent.ReciveChannel:
 		if msg, ok := v.(*gcmd.CmdMessage); ok {

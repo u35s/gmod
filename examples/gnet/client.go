@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"net"
 	"time"
@@ -32,8 +30,7 @@ func handleConn(conn net.Conn) {
 		case v := <-agent.ReciveChannel:
 			if msg, ok := v.(*gcmd.CmdMessage); ok {
 				var rev testcmd.CmdServer_chat
-				json.Unmarshal(msg.Data, &rev)
-				fmt.Printf("server say %v\n", rev.Cnt)
+				agent.Processor.Unmarshal(msg.Data, &rev)
 			}
 		case err := <-agent.Err:
 			log.Printf("agent error,%v\n", err)
