@@ -4,13 +4,13 @@ import (
 	"github.com/u35s/gmod"
 )
 
-var Mod gmod.Moder
-
 var srvm *serverManager
 
-func init() {
-	srvm = new(serverManager)
-	Mod = srvm
+func Mod() gmod.Moder {
+	if srvm == nil {
+		srvm = new(serverManager)
+	}
+	return srvm
 }
 
 func AddToListen(s ToListenServer) {

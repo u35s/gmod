@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/u35s/gmod/examples/game/testcmd"
-	"github.com/u35s/gmod/gcmd"
-	"github.com/u35s/gmod/gnet"
+	"github.com/u35s/gmod/glib/gcmd"
+	"github.com/u35s/gmod/glib/gnet"
 )
 
 func main() {

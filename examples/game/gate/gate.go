@@ -10,9 +10,9 @@ import (
 
 func main() {
 	gmod.Run(
-		gsrvm.Mod,
-		server.Mod,
-		agentm.Mod,
-		userm.Mod,
+		gsrvm.Mod(),
+		server.Mod(),
+		agentm.Mod(),
+		userm.Mod(),
 	)
 }

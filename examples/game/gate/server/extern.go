@@ -2,10 +2,11 @@ package server
 
 import "github.com/u35s/gmod"
 
-var Mod gmod.Moder
 var srv *gateServer
 
-func init() {
-	srv = new(gateServer)
-	Mod = srv
+func Mod() gmod.Moder {
+	if srv == nil {
+		srv = new(gateServer)
+	}
+	return srv
 }

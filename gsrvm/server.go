@@ -3,7 +3,7 @@ package gsrvm
 import (
 	"log"
 
-	"github.com/u35s/gmod/gnet"
+	"github.com/u35s/gmod/glib/gnet"
 )
 
 type ToListenServer struct {

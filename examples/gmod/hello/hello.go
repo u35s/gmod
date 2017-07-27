@@ -19,14 +19,6 @@ func (this *hello) Run() {
 	this.frame++
 }
 
-var h *hello
-var Mod gmod.Moder
-
-func init() {
-	h = new(hello)
-	Mod = h
-}
-
 func (this *hello) say() {
 	log.Printf("hello say %v", world.Name())
 }

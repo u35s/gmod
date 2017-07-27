@@ -4,9 +4,9 @@ import (
 	"errors"
 	"log"
 
-	"github.com/u35s/gmod/gcmd"
-	"github.com/u35s/gmod/gnet"
-	"github.com/u35s/gmod/gtime"
+	"github.com/u35s/gmod/glib/gcmd"
+	"github.com/u35s/gmod/glib/gnet"
+	"github.com/u35s/gmod/glib/gtime"
 )
 
 type user struct {

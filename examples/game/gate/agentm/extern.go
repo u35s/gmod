@@ -4,9 +4,9 @@ import "github.com/u35s/gmod"
 
 var agentm *agentManager
 
-var Mod gmod.Moder
-
-func init() {
-	agentm = new(agentManager)
-	Mod = agentm
+func Mod() gmod.Moder {
+	if agentm == nil {
+		agentm = new(agentManager)
+	}
+	return agentm
 }

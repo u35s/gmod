@@ -8,7 +8,7 @@ import (
 
 func main() {
 	gmod.Run(
-		hello.Mod,
-		world.Mod,
+		hello.Mod(),
+		world.Mod(),
 	)
 }

@@ -6,8 +6,8 @@ import (
 
 	"github.com/u35s/gmod"
 	"github.com/u35s/gmod/examples/game/gate/userm"
-	"github.com/u35s/gmod/gcmd"
-	"github.com/u35s/gmod/gnet"
+	"github.com/u35s/gmod/glib/gcmd"
+	"github.com/u35s/gmod/glib/gnet"
 )
 
 type agentManager struct {

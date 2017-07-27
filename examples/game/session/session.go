@@ -8,7 +8,7 @@ import (
 
 func main() {
 	gmod.Run(
-		gsrvm.Mod,
-		server.Mod,
+		gsrvm.Mod(),
+		server.Mod(),
 	)
 }

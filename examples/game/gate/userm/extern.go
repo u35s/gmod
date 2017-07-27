@@ -2,14 +2,12 @@ package userm
 
 import (
 	"github.com/u35s/gmod"
-	"github.com/u35s/gmod/gnet"
-	"github.com/u35s/gmod/gtime"
+	"github.com/u35s/gmod/glib/gnet"
+	"github.com/u35s/gmod/glib/gtime"
 )
 
 var seqid uint = 0
 var userm *userManager
-
-var Mod gmod.Moder
 
 func NewVerifyUser(g *gnet.Agent) *user {
 	seqid++
@@ -32,8 +30,13 @@ func AddUser(u *user) {
 	userm.addUser(u)
 }
 
+func Mod() gmod.Moder {
+	if userm == nil {
+		userm = new(userManager)
+	}
+	return userm
+}
+
 func init() {
-	userm = new(userManager)
-	Mod = userm
 	defaultRoute()
 }
