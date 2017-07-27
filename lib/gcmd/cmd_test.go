@@ -3,6 +3,7 @@ package gcmd
 import (
 	"shell/cmd"
 	"testing"
+	"time"
 )
 
 type Cmd_test struct {
@@ -20,18 +21,23 @@ func Test_PackDrawCmd(t *testing.T) {
 	var msg Cmd_test
 	msg.Init()
 	msg.Data = 1
-	bts, _ := processor.Marshal(&msg)
+	bts, _ := processor.Pack(&msg)
 	t.Log(string(bts))
 	ch := make(chan interface{}, 0)
 	go func() {
-		processor.Unmarshal(bts, ch)
+		processor.UnPack(bts, ch)
 	}()
-	itfc := <-ch
-	log := t.Log
-	if m, ok := itfc.(*CmdMessage); ok {
-		if m.GetCmd() != 1 || m.GetParam() != 2 {
-			log = t.Error
+	select {
+	case itfc := <-ch:
+		log := t.Log
+		if m, ok := itfc.(*CmdMessage); ok {
+			if m.GetCmd() != 1 || m.GetParam() != 2 {
+				log = t.Error
+			}
+			log(m.GetCmd(), m.GetParam(), string(m.Data))
 		}
-		log(m.GetCmd(), m.GetParam(), string(m.Data))
+
+	case <-time.After(time.Second):
+		t.Error("time out")
 	}
 }
