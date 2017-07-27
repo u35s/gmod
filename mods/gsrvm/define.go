@@ -3,7 +3,7 @@ package gsrvm
 import (
 	"log"
 
-	"github.com/u35s/gmod/glib/gnet"
+	"github.com/u35s/gmod/lib/gnet"
 )
 
 type ToListenServer struct {
@@ -20,22 +20,22 @@ type ToConnectServer struct {
 	Ok        bool
 }
 
-type ConnectedServer struct {
+type connectedServer struct {
 	Type  string
 	Name  string
 	Agent *gnet.Agent
 	Add   bool
 }
 
-type ConnectedServerSlc []*ConnectedServer
+type connectedServerSlc []*connectedServer
 
-func (this *ConnectedServerSlc) Add(srv *ConnectedServer) {
+func (this *connectedServerSlc) Add(srv *connectedServer) {
 	*this = append(*this, srv)
 	log.Printf("%v,%v add success,local addr %v,remote addr %v",
 		srv.Type, srv.Name, srv.Agent.Conn.LocalAddr(), srv.Agent.Conn.RemoteAddr())
 }
 
-func (this *ConnectedServerSlc) Remove(srv *ConnectedServer) {
+func (this *connectedServerSlc) Remove(srv *connectedServer) {
 	for i := range *this {
 		*this = append((*this)[:i], (*this)[i+1:]...)
 		log.Printf("%v,%v remove success,local addr %v,remote addr %v",
@@ -43,4 +43,4 @@ func (this *ConnectedServerSlc) Remove(srv *ConnectedServer) {
 	}
 }
 
-type ConnectedServerSlcMap map[string]ConnectedServerSlc
+type connectedServerSlcMap map[string]connectedServerSlc

@@ -9,16 +9,16 @@ import (
 
 	"github.com/u35s/gmod"
 	"github.com/u35s/gmod/examples/game/testcmd"
-	"github.com/u35s/gmod/glib/gcmd"
-	"github.com/u35s/gmod/glib/gnet"
+	"github.com/u35s/gmod/lib/gcmd"
+	"github.com/u35s/gmod/lib/gnet"
 )
 
 type serverManager struct {
 	gmod.ModBase
 	serverTypeCount  int
-	addServerChannel chan *ConnectedServer
+	addServerChannel chan *connectedServer
 	serverMsgChannel chan interface{}
-	connectedServers ConnectedServerSlcMap
+	connectedServers connectedServerSlcMap
 	toListen         []ToListenServer
 	toConnect        []ToConnectServer
 
@@ -27,9 +27,9 @@ type serverManager struct {
 }
 
 func (this *serverManager) Init() {
-	this.addServerChannel = make(chan *ConnectedServer, 1<<4)
+	this.addServerChannel = make(chan *connectedServer, 1<<4)
 	this.serverMsgChannel = make(chan interface{}, 1<<16)
-	this.connectedServers = make(ConnectedServerSlcMap)
+	this.connectedServers = make(connectedServerSlcMap)
 }
 
 func (this *serverManager) Wait() bool {
@@ -95,7 +95,7 @@ func (this *serverManager) addServer() {
 			slc, ok := this.connectedServers[srv.Type]
 			if srv.Add {
 				if !ok {
-					slc = make(ConnectedServerSlc, 0, 1)
+					slc = make(connectedServerSlc, 0, 1)
 				}
 				srv.Add = false
 				slc.Add(srv)
@@ -121,7 +121,7 @@ func (this *serverManager) connectTo(addr, tp, name, localTp, localName string) 
 	send.Type = localTp
 	send.Name = localName
 	agent.SendChannel <- &send
-	this.addServerChannel <- &ConnectedServer{Type: tp, Name: name, Agent: agent, Add: true}
+	this.addServerChannel <- &connectedServer{Type: tp, Name: name, Agent: agent, Add: true}
 	return nil
 }
 
@@ -143,7 +143,7 @@ func (this *serverManager) handleConn(conn net.Conn) {
 			var rev testcmd.CmdServer_establishConnection
 			json.Unmarshal(msg.Data, &rev)
 			agent.SetReciveChannel(this.serverMsgChannel)
-			this.addServerChannel <- &ConnectedServer{Type: rev.Type, Name: rev.Name, Agent: agent, Add: true}
+			this.addServerChannel <- &connectedServer{Type: rev.Type, Name: rev.Name, Agent: agent, Add: true}
 		}
 	case err := <-agent.Err:
 		log.Printf("handle connection err %v", err)

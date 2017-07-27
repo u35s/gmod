@@ -1,13 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net"
 	"time"
 
 	"github.com/u35s/gmod/examples/gnet/testcmd"
-	"github.com/u35s/gmod/glib/gcmd"
-	"github.com/u35s/gmod/glib/gnet"
+	"github.com/u35s/gmod/lib/gcmd"
+	"github.com/u35s/gmod/lib/gnet"
 )
 
 func main() {
@@ -31,6 +32,7 @@ func handleConn(conn net.Conn) {
 			if msg, ok := v.(*gcmd.CmdMessage); ok {
 				var rev testcmd.CmdServer_chat
 				agent.Processor.Unmarshal(msg.Data, &rev)
+				fmt.Printf("server say %v\n", rev.Cnt)
 			}
 		case err := <-agent.Err:
 			log.Printf("agent error,%v\n", err)

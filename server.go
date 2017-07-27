@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/u35s/gmod/glib/gtime"
+	"github.com/u35s/gmod/lib/gtime"
 )
 
 const frameWarningTime = 100 * gtime.MillisecondN

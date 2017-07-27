@@ -5,7 +5,7 @@ import (
 	"github.com/u35s/gmod/examples/game/gate/agentm"
 	"github.com/u35s/gmod/examples/game/gate/server"
 	"github.com/u35s/gmod/examples/game/gate/userm"
-	"github.com/u35s/gmod/gsrvm"
+	"github.com/u35s/gmod/mods/gsrvm"
 )
 
 func main() {

@@ -4,9 +4,9 @@ import (
 	"net"
 
 	"github.com/u35s/gmod"
-	"github.com/u35s/gmod/glib/gcmd"
-	"github.com/u35s/gmod/glib/gnet"
-	"github.com/u35s/gmod/gsrvm"
+	"github.com/u35s/gmod/lib/gcmd"
+	"github.com/u35s/gmod/lib/gnet"
+	"github.com/u35s/gmod/mods/gsrvm"
 )
 
 type sessionServer struct {

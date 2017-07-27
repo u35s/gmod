@@ -5,8 +5,8 @@ import (
 	"net"
 
 	"github.com/u35s/gmod/examples/gnet/testcmd"
-	"github.com/u35s/gmod/glib/gcmd"
-	"github.com/u35s/gmod/glib/gnet"
+	"github.com/u35s/gmod/lib/gcmd"
+	"github.com/u35s/gmod/lib/gnet"
 )
 
 func main() {

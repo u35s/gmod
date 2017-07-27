@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/u35s/gmod/examples/game/testcmd"
-	"github.com/u35s/gmod/glib/gcmd"
-	"github.com/u35s/gmod/gsrvm"
+	"github.com/u35s/gmod/lib/gcmd"
+	"github.com/u35s/gmod/mods/gsrvm"
 )
 
 var serverDelivers [64][255]func(*gcmd.CmdMessage)

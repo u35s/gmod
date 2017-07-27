@@ -2,8 +2,8 @@ package userm
 
 import (
 	"github.com/u35s/gmod"
-	"github.com/u35s/gmod/glib/gnet"
-	"github.com/u35s/gmod/glib/gtime"
+	"github.com/u35s/gmod/lib/gnet"
+	"github.com/u35s/gmod/lib/gtime"
 )
 
 var seqid uint = 0

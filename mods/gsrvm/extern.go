@@ -4,7 +4,7 @@ import (
 	"net"
 
 	"github.com/u35s/gmod"
-	"github.com/u35s/gmod/glib/gnet"
+	"github.com/u35s/gmod/lib/gnet"
 )
 
 var srvm *serverManager

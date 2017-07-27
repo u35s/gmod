@@ -6,7 +6,7 @@ import (
 
 	"github.com/u35s/gmod/examples/game/gate/userm"
 	"github.com/u35s/gmod/examples/game/testcmd"
-	"github.com/u35s/gmod/glib/gcmd"
+	"github.com/u35s/gmod/lib/gcmd"
 )
 
 var serverDelivers [64][255]func(*gcmd.CmdMessage)

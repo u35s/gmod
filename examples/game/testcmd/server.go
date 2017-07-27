@@ -1,6 +1,6 @@
 package testcmd
 
-import "github.com/u35s/gmod/glib/gcmd"
+import "github.com/u35s/gmod/lib/gcmd"
 
 const CmdServer = 1
 
