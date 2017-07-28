@@ -9,7 +9,7 @@ import (
 	"github.com/u35s/gmod/mods/gsrvm"
 )
 
-var serverDelivers [64][255]func(*gcmd.CmdMessage)
+var serverDelivers [255][255]func(*gcmd.CmdMessage)
 
 func serverRoute(cmd gcmd.Cmder, h func(*gcmd.CmdMessage)) {
 	cmd.Init()
