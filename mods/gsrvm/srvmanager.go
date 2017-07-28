@@ -57,7 +57,7 @@ func (this *serverManager) sendCmdToServer(tp, name string, msg interface{}) {
 	if ok {
 		for _, v := range slc {
 			if name == "" || v.Name == name {
-				v.Agent.SendChannel <- msg
+				v.Agent.SendMsg(msg)
 			}
 		}
 	}
@@ -120,7 +120,7 @@ func (this *serverManager) connectTo(addr, tp, name, localTp, localName string) 
 	var send testcmd.CmdServer_establishConnection
 	send.Type = localTp
 	send.Name = localName
-	agent.SendChannel <- &send
+	agent.SendMsg(&send)
 	this.addServerChannel <- &connectedServer{Type: tp, Name: name, Agent: agent, Add: true}
 	return nil
 }
@@ -138,8 +138,8 @@ func (this *serverManager) listenTo(addr string) error {
 func (this *serverManager) handleConn(conn net.Conn) {
 	agent := this.newAgentFunc(conn)
 	select {
-	case v := <-agent.ReciveChannel:
-		if msg, ok := v.(*gcmd.CmdMessage); ok {
+	case itfc := <-agent.ReciveChannel:
+		if msg, ok := itfc.(*gcmd.CmdMessage); ok {
 			var rev testcmd.CmdServer_establishConnection
 			json.Unmarshal(msg.Data, &rev)
 			agent.SetReciveChannel(this.serverMsgChannel)

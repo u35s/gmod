@@ -20,6 +20,13 @@ type user struct {
 	accid uint
 }
 
+func (this *user) SendCmdToMe(send gcmd.Cmder) {
+	bts, err := this.Agent.Process.Marshal(send)
+	if err == nil {
+		this.Agent.SendChannel <- bts
+	}
+}
+
 func (this *user) verify() {
 	if this.loginTime+gtime.MinuteS < gtime.Time() {
 		this.activeClose = errors.New("verify time out")
@@ -30,8 +37,8 @@ func (this *user) verify() {
 func (this *user) deliverMsg() {
 	for {
 		select {
-		case v := <-this.Agent.ReciveChannel:
-			if msg, ok := v.(*gcmd.CmdMessage); ok {
+		case itfc := <-this.Agent.ReciveChannel:
+			if msg, ok := itfc.(*gcmd.CmdMessage); ok {
 				log.Printf("deliver user %v msg,cmd %v,param %v", this.seqid, msg.GetCmd(), msg.GetParam())
 				deliver(this, msg)
 			}

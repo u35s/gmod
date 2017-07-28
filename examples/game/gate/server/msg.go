@@ -34,7 +34,7 @@ func defaultServerRoute() {
 			log.Printf("user login success, accid %v,seqid %v,", rev.Accid, rev.Seqid)
 			var send testcmd.CmdUser_chat
 			send.Cnt = "login success"
-			u.Agent.SendChannel <- &send
+			u.SendCmdToMe(&send)
 		}
 	})
 }

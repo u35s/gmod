@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net"
 
@@ -23,14 +24,14 @@ func handleConn(conn net.Conn) {
 	agent := gnet.NewAgent(conn, gcmd.NewProcessor())
 	var send testcmd.CmdServer_chat
 	send.Cnt = "welcome"
-	agent.SendChannel <- &send
+	agent.SendMsg(&send)
 	for {
 		select {
-		case v := <-agent.ReciveChannel:
-			if msg, ok := v.(*gcmd.CmdMessage); ok {
+		case itfc := <-agent.ReciveChannel:
+			if msg, ok := itfc.(*gcmd.CmdMessage); ok {
 				var rev testcmd.CmdServer_chat
-				agent.Processor.Unmarshal(msg.Data, &rev)
-				agent.SendChannel <- &rev
+				json.Unmarshal(msg.Data, &rev)
+				agent.SendMsg(&rev)
 			}
 		case err := <-agent.Err:
 			log.Printf("agent err,%v", err)

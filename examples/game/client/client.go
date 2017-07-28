@@ -25,11 +25,12 @@ func handleConn(conn net.Conn) {
 	agent := gnet.NewAgent(conn, gcmd.NewProcessor())
 	var send testcmd.CmdUser_login
 	send.Accid = 1
-	agent.SendChannel <- &send
+	bts, _ := agent.Process.Marshal(&send)
+	agent.SendChannel <- bts
 	for {
 		select {
-		case v := <-agent.ReciveChannel:
-			if msg, ok := v.(*gcmd.CmdMessage); ok {
+		case itfc := <-agent.ReciveChannel:
+			if msg, ok := itfc.(*gcmd.CmdMessage); ok {
 				deliverMsg(msg)
 			}
 		case err := <-agent.Err:
