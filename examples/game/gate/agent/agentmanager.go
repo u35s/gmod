@@ -1,11 +1,11 @@
-package agentm
+package agent
 
 import (
 	"log"
 	"net"
 
 	"github.com/u35s/gmod"
-	"github.com/u35s/gmod/examples/game/gate/userm"
+	"github.com/u35s/gmod/examples/game/gate/user"
 	"github.com/u35s/gmod/lib/gcmd"
 	"github.com/u35s/gmod/lib/gnet"
 )
@@ -26,9 +26,8 @@ func (this *agentManager) Init() {
 func (this *agentManager) handleConn(conn net.Conn) {
 	log.Printf("[agentm],receive new connection,local addr %v,remote addr %v",
 		conn.LocalAddr(), conn.RemoteAddr())
-	u := userm.NewVerifyUser()
-	u.Agent = gnet.NewAgent(conn, gcmd.NewProcessor(), func(err error) {
-		u.Err <- err
-	})
-	userm.AddVerifyUser(u)
+	u := user.NewVerifyUser()
+	u.Agent = gnet.NewAgent(conn, gcmd.NewProcessor(),
+		func(err error) { u.Err <- err })
+	user.AddVerifyUser(u)
 }

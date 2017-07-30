@@ -11,7 +11,7 @@ import (
 	"github.com/u35s/gmod/examples/game/testcmd"
 	"github.com/u35s/gmod/lib/gcmd"
 	"github.com/u35s/gmod/lib/gnet"
-	"github.com/u35s/gmod/mods/gsrvm"
+	"github.com/u35s/gmod/mods/gsrvs"
 )
 
 type sessionServer struct {
@@ -23,11 +23,11 @@ type sessionServer struct {
 func (this *sessionServer) Init() {
 	defaultServerRoute()
 	this.serverMsgChannel = make(chan interface{}, 1<<16)
-	gsrvm.AddToListenAddr(":8001")
+	gsrvs.AddToListenAddr(":8001")
 }
 
 func (this *sessionServer) Wait() bool {
-	gsrvm.EachToListenAddr(func(s *gsrvm.ToListenAddr) {
+	gsrvs.EachToListenAddr(func(s *gsrvs.ToListenAddr) {
 		if !s.Ok && this.listenTo(s.Addr) == nil {
 			s.Ok = true
 		}
@@ -46,9 +46,9 @@ func (this *sessionServer) listenTo(addr string) error {
 }
 
 func (this *sessionServer) handleConn(conn net.Conn) {
-	srv := &gsrvm.ConnectedServer{}
+	srv := &gsrvs.ConnectedServer{}
 	srv.Agent = gnet.NewAgent(conn, gcmd.NewProcessor(), func(err error) {
-		gsrvm.Remove(srv)
+		gsrvs.Remove(srv)
 		log.Printf("server %v,%v remote addr %v error %v",
 			srv.Type, srv.Name, srv.Agent.Conn.RemoteAddr(), err)
 	})
@@ -60,7 +60,7 @@ func (this *sessionServer) handleConn(conn net.Conn) {
 			json.Unmarshal(msg.Data, &rev)
 			srv.Type, srv.Name = rev.Type, rev.Name
 			srv.Agent.SetReciveChannel(this.serverMsgChannel)
-			gsrvm.Add(srv)
+			gsrvs.Add(srv)
 		}
 	case <-time.After(2 * time.Second):
 		err := errors.New("connection verify time out")

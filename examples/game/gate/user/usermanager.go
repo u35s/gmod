@@ -1,4 +1,4 @@
-package userm
+package user
 
 import (
 	"sync"

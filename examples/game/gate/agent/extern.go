@@ -1,4 +1,4 @@
-package agentm
+package agent
 
 import "github.com/u35s/gmod"
 

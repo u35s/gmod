@@ -1,4 +1,4 @@
-package userm
+package user
 
 import (
 	"github.com/u35s/gmod"

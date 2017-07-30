@@ -6,7 +6,7 @@ import (
 
 	"github.com/u35s/gmod/examples/game/testcmd"
 	"github.com/u35s/gmod/lib/gcmd"
-	"github.com/u35s/gmod/mods/gsrvm"
+	"github.com/u35s/gmod/mods/gsrvs"
 )
 
 var serverDelivers [255][255]func(*gcmd.CmdMessage)
@@ -53,5 +53,5 @@ func defaultServerRoute() {
 }
 
 func sendMsgToGate(send gcmd.Cmder) {
-	gsrvm.SendCmdToServer("gate", "gate", send)
+	gsrvs.SendCmdToServer("gate", "gate", send)
 }

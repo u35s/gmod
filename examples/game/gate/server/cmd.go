@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/u35s/gmod/examples/game/gate/userm"
+	"github.com/u35s/gmod/examples/game/gate/user"
 	"github.com/u35s/gmod/examples/game/testcmd"
 	"github.com/u35s/gmod/lib/gcmd"
 )
@@ -28,9 +28,9 @@ func defaultServerRoute() {
 	serverRoute(&testcmd.CmdServer_userLogin{}, func(msg *gcmd.CmdMessage) {
 		var rev testcmd.CmdServer_userLogin
 		json.Unmarshal(msg.Data, &rev)
-		u := userm.GetVerifyUserBySeqid(rev.Seqid)
+		u := user.GetVerifyUserBySeqid(rev.Seqid)
 		if u != nil {
-			userm.AddUser(u)
+			user.AddUser(u)
 			log.Printf("user login success, accid %v,seqid %v,", rev.Accid, rev.Seqid)
 			var send testcmd.CmdUser_chat
 			send.Cnt = "login success"

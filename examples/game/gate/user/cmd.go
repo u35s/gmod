@@ -1,4 +1,4 @@
-package userm
+package user
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/u35s/gmod/examples/game/testcmd"
 	"github.com/u35s/gmod/lib/gcmd"
-	"github.com/u35s/gmod/mods/gsrvm"
+	"github.com/u35s/gmod/mods/gsrvs"
 )
 
 var delivers [255][255]func(*user, *gcmd.CmdMessage)
@@ -31,10 +31,10 @@ func defaultRoute() {
 		send.Accid = rev.Accid
 		send.Seqid = u.seqid
 		log.Printf("user login,accid %v,seqid %v", rev.Accid, send.Seqid)
-		sendMsgToSession(&send)
+		sendCmdToSession(&send)
 	})
 }
 
-func sendMsgToSession(send gcmd.Cmder) {
-	gsrvm.SendCmdToServer("session", "session", send)
+func sendCmdToSession(send gcmd.Cmder) {
+	gsrvs.SendCmdToServer("session", "session", &send)
 }

@@ -1,4 +1,4 @@
-package gsrvm
+package gsrvs
 
 import (
 	"sync"
