@@ -1,12 +1,21 @@
 package gsrvm
 
 import (
-	"log"
+	"sync"
 
+	"github.com/u35s/gmod"
 	"github.com/u35s/gmod/lib/gnet"
 )
 
-type ToListenServer struct {
+type ConnectedServer struct {
+	Type  string
+	Name  string
+	Agent *gnet.Agent
+}
+
+type ConnectedServerSlc []*ConnectedServer
+
+type ToListenAddr struct {
 	Addr string
 	Ok   bool
 }
@@ -20,27 +29,17 @@ type ToConnectServer struct {
 	Ok        bool
 }
 
-type connectedServer struct {
-	Type  string
-	Name  string
-	Agent *gnet.Agent
-	Add   bool
+type ConnectedServerSlcSafeMap struct {
+	gmod.ModBase
+	lock sync.RWMutex
+
+	toListen  []*ToListenAddr
+	toConnect []*ToConnectServer
+
+	connectedServerSlcMap map[string]ConnectedServerSlc
+	size                  int
 }
 
-type connectedServerSlc []*connectedServer
-
-func (this *connectedServerSlc) Add(srv *connectedServer) {
-	*this = append(*this, srv)
-	log.Printf("%v,%v add success,local addr %v,remote addr %v",
-		srv.Type, srv.Name, srv.Agent.Conn.LocalAddr(), srv.Agent.Conn.RemoteAddr())
+func (this *ConnectedServerSlcSafeMap) Init() {
+	this.connectedServerSlcMap = make(map[string]ConnectedServerSlc, 0)
 }
-
-func (this *connectedServerSlc) Remove(srv *connectedServer) {
-	for i := range *this {
-		*this = append((*this)[:i], (*this)[i+1:]...)
-		log.Printf("%v,%v remove success,local addr %v,remote addr %v",
-			srv.Type, srv.Name, srv.Agent.Conn.LocalAddr(), srv.Agent.Conn.RemoteAddr())
-	}
-}
-
-type connectedServerSlcMap map[string]connectedServerSlc

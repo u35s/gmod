@@ -48,14 +48,10 @@ func defaultServerRoute() {
 		var send testcmd.CmdServer_userLogin
 		send.Seqid = rev.Seqid
 		send.Accid = rev.Accid
-		sendCmdToGate(&send)
+		sendMsgToGate(&send)
 	})
 }
 
-func sendCmdToGate(send gcmd.Cmder) {
-	sendCmdToServer("gate", "gate", send)
-}
-
-func sendCmdToServer(tp, name string, send gcmd.Cmder) {
-	gsrvm.SendCmdToServer(tp, name, send)
+func sendMsgToGate(send gcmd.Cmder) {
+	gsrvm.SendCmdToServer("gate", "gate", send)
 }

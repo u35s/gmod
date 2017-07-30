@@ -24,14 +24,14 @@ func handleConn(conn net.Conn) {
 	agent := gnet.NewAgent(conn, gcmd.NewProcessor())
 	var send testcmd.CmdServer_chat
 	send.Cnt = "welcome"
-	agent.SendMsg(&send)
+	agent.SendCmd(&send)
 	for {
 		select {
 		case itfc := <-agent.ReciveChannel:
 			if msg, ok := itfc.(*gcmd.CmdMessage); ok {
 				var rev testcmd.CmdServer_chat
 				json.Unmarshal(msg.Data, &rev)
-				agent.SendMsg(&rev)
+				agent.SendCmd(&rev)
 			}
 		case err := <-agent.Err:
 			log.Printf("agent err,%v", err)

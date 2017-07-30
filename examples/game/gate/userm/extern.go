@@ -2,16 +2,15 @@ package userm
 
 import (
 	"github.com/u35s/gmod"
-	"github.com/u35s/gmod/lib/gnet"
 	"github.com/u35s/gmod/lib/gtime"
 )
 
 var seqid uint = 0
 var userm *userManager
 
-func NewVerifyUser(g *gnet.Agent) *user {
+func NewVerifyUser() *user {
 	seqid++
-	return &user{Agent: g, seqid: seqid, loginTime: gtime.Time()}
+	return &user{seqid: seqid, loginTime: gtime.Time(), Err: make(chan error, 2)}
 }
 
 func AddVerifyUser(u *user) {

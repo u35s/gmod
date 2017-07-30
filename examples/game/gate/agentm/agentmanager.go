@@ -24,8 +24,11 @@ func (this *agentManager) Init() {
 }
 
 func (this *agentManager) handleConn(conn net.Conn) {
-	log.Printf("[agentm],receive new connection,local addr %v,remote addr %v", conn.LocalAddr(), conn.RemoteAddr())
-	agent := gnet.NewAgent(conn, gcmd.NewProcessor())
-	u := userm.NewVerifyUser(agent)
+	log.Printf("[agentm],receive new connection,local addr %v,remote addr %v",
+		conn.LocalAddr(), conn.RemoteAddr())
+	u := userm.NewVerifyUser()
+	u.Agent = gnet.NewAgent(conn, gcmd.NewProcessor(), func(err error) {
+		u.Err <- err
+	})
 	userm.AddVerifyUser(u)
 }

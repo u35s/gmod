@@ -26,7 +26,7 @@ func handleConn(conn net.Conn) {
 	agent := gnet.NewAgent(conn, gcmd.NewProcessor())
 	var send testcmd.CmdServer_chat
 	send.Cnt = "hello"
-	agent.SendMsg(&send)
+	agent.SendCmd(&send)
 	for {
 		select {
 		case itfc := <-agent.ReciveChannel:

@@ -3,6 +3,7 @@ package gnet
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"net"
 	"sync"
 )
@@ -27,16 +28,16 @@ func (x *packetRead) parse() {
 }
 
 type Agent struct {
-	lock sync.Mutex
+	Conn    net.Conn
+	Process Processor
 
-	unpackBuf bytes.Buffer
-	read      packetRead
-
-	Process       Processor
-	Conn          net.Conn
-	Err           chan error
-	ReciveChannel chan interface{}
-	SendChannel   chan interface{}
+	lock          sync.Mutex
+	unpackBuf     bytes.Buffer
+	read          packetRead
+	once          sync.Once
+	errHandler    func(error)
+	reciveChannel chan interface{}
+	sendChannel   chan interface{}
 }
 
 func binRead(buf *bytes.Buffer, data interface{}) {
@@ -100,12 +101,13 @@ func (this *Agent) unpack(bts []byte, ch chan interface{}) {
 }
 
 func (this *Agent) send() error {
-	for cmd := range this.SendChannel {
-		if cmd == nil {
-			return nil
+	for send := range this.sendChannel {
+		if send == nil {
+			return errors.New("send is nil")
 		}
-		bts, err := this.Process.Marshal(cmd)
-		if err == nil {
+		bts, err := this.Process.Marshal(send)
+		if err != nil {
+			return err
 		}
 		bts = this.pack(bts)
 		_, err = this.Conn.Write(bts)
@@ -123,26 +125,48 @@ func (this *Agent) recive() error {
 		if err != nil {
 			return err
 		}
-		this.unpack(bts[:num], this.ReciveChannel)
+		this.unpack(bts[:num], this.reciveChannel)
 	}
+}
+
+func (this *Agent) handleError(err error, end func()) {
+	this.once.Do(func() {
+		if this.errHandler != nil {
+			this.errHandler(err)
+		}
+		if end != nil {
+			end()
+		}
+	})
 }
 
 func (this *Agent) run() {
 	go func() {
-		this.Err <- this.recive()
+		this.handleError(this.recive(), func() {
+			this.sendChannel <- nil
+		})
+
 	}()
 	go func() {
-		this.Err <- this.send()
+		this.handleError(this.send(), func() {
+			this.Conn.Close()
+		})
 	}()
 }
 
 func (this *Agent) Close(err error) {
-	this.SendChannel <- nil
-	this.Conn.Close()
+	this.handleError(err, func() {
+		this.sendChannel <- nil
+		this.Conn.Close()
+	})
 }
 
-func (this *Agent) SendMsg(m interface{}) {
-	this.SendChannel <- m
+func (this *Agent) GetMsg() <-chan interface{} {
+	return this.reciveChannel
+}
+
+func (this *Agent) SendCmd(m interface{}) {
+	this.sendChannel <- m
 }
 
 func (this *Agent) SetReciveChannel(ch chan interface{}) {
@@ -150,22 +174,23 @@ func (this *Agent) SetReciveChannel(ch chan interface{}) {
 	defer this.lock.Unlock()
 	for {
 		select {
-		case msg := <-this.ReciveChannel:
+		case msg := <-this.reciveChannel:
 			ch <- msg
 		default:
-			this.ReciveChannel = ch
+			this.reciveChannel = ch
 			return
 		}
 	}
 }
 
-func NewAgent(conn net.Conn, process Processor) *Agent {
+func NewAgent(conn net.Conn, process Processor, errHandler func(error)) *Agent {
 	g := &Agent{
+		Conn: conn,
+
 		Process:       process,
-		Conn:          conn,
-		Err:           make(chan error, 1<<4),
-		ReciveChannel: make(chan interface{}, 1<<10),
-		SendChannel:   make(chan interface{}, 1<<10),
+		errHandler:    errHandler,
+		reciveChannel: make(chan interface{}, 1<<10),
+		sendChannel:   make(chan interface{}, 1<<10),
 	}
 	g.run()
 	return g
