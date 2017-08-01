@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"io/ioutil"
-	"log"
 	"strings"
 )
 
@@ -29,8 +28,7 @@ func ReadFile(file string) error {
 	for {
 		bts, _, err := reader.ReadLine()
 		if err != nil {
-			log.Printf("err:%v", err)
-			break
+			return err
 		}
 		if len(bts) == 0 || bts[0] == '#' {
 			continue
@@ -43,7 +41,6 @@ func ReadFile(file string) error {
 			conf.groups[lastGroup][optk] = optv
 		}
 	}
-	log.Printf("%+v", conf)
 	return nil
 }
 

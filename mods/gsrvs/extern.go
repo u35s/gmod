@@ -11,6 +11,18 @@ func init() {
 	srvs.init()
 }
 
+func SendCmdToServerWithID(id uint, msg interface{}) {
+	srvs.lock.RLock()
+	for _, slc := range srvs.connectedServerSlcMap {
+		for _, v := range slc {
+			if id == 0 || v.ID == id {
+				v.Agent.SendCmd(msg)
+			}
+		}
+	}
+	srvs.lock.RUnlock()
+}
+
 func SendCmdToServer(tp, name string, msg interface{}) {
 	srvs.lock.RLock()
 	if slc, ok := srvs.connectedServerSlcMap[tp]; ok {
@@ -33,8 +45,12 @@ func EachToListenAddr(f func(*ToListenAddr)) {
 	}
 }
 
+func AddToConnectServerWithID(id uint, tp, name, addr string) {
+	srvs.toConnect = append(srvs.toConnect, &ToConnectServer{ServerBase: ServerBase{Type: tp, Name: name, ID: id}, Addr: addr})
+}
+
 func AddToConnectServer(tp, name, addr string) {
-	srvs.toConnect = append(srvs.toConnect, &ToConnectServer{Type: tp, Name: name, Addr: addr})
+	AddToConnectServerWithID(0, tp, name, addr)
 }
 
 func EachToConnectServer(f func(*ToConnectServer)) {

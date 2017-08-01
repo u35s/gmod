@@ -41,7 +41,7 @@ func (this *gateServer) connectTo(addr, tp, name string) error {
 		log.Printf("connect to %v err:%v", addr, err)
 		return err
 	}
-	srv := &gsrvs.ConnectedServer{Type: tp, Name: name}
+	srv := &gsrvs.ConnectedServer{ServerBase: gsrvs.ServerBase{Type: tp, Name: name}}
 	srv.Agent = gnet.NewAgent(conn, gcmd.NewProcessor(), func(err error) {
 		gsrvs.Remove(srv)
 		log.Printf("server %v,%v remote addr %v error %v",

@@ -6,9 +6,14 @@ import (
 	"github.com/u35s/gmod/lib/gnet"
 )
 
+type ServerBase struct {
+	ID   uint
+	Type string
+	Name string
+}
+
 type ConnectedServer struct {
-	Type  string
-	Name  string
+	ServerBase
 	Agent *gnet.Agent
 }
 
@@ -20,8 +25,7 @@ type ToListenAddr struct {
 }
 
 type ToConnectServer struct {
-	Type      string
-	Name      string
+	ServerBase
 	Addr      string
 	LocalType string
 	LocalName string
