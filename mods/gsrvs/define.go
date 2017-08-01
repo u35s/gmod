@@ -3,7 +3,6 @@ package gsrvs
 import (
 	"sync"
 
-	"github.com/u35s/gmod"
 	"github.com/u35s/gmod/lib/gnet"
 )
 
@@ -30,7 +29,6 @@ type ToConnectServer struct {
 }
 
 type ConnectedServerSlcSafeMap struct {
-	gmod.ModBase
 	lock sync.RWMutex
 
 	toListen  []*ToListenAddr
@@ -40,6 +38,6 @@ type ConnectedServerSlcSafeMap struct {
 	size                  int
 }
 
-func (this *ConnectedServerSlcSafeMap) Init() {
+func (this *ConnectedServerSlcSafeMap) init() {
 	this.connectedServerSlcMap = make(map[string]ConnectedServerSlc, 0)
 }

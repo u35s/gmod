@@ -2,17 +2,13 @@ package gsrvs
 
 import (
 	"log"
-
-	"github.com/u35s/gmod"
 )
 
 var srvs *ConnectedServerSlcSafeMap
 
-func Mod() gmod.Moder {
-	if srvs == nil {
-		srvs = new(ConnectedServerSlcSafeMap)
-	}
-	return srvs
+func init() {
+	srvs = new(ConnectedServerSlcSafeMap)
+	srvs.init()
 }
 
 func SendCmdToServer(tp, name string, msg interface{}) {
