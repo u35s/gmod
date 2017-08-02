@@ -126,7 +126,6 @@ func (this *server) setState(state serverState) {
 
 func (this *server) setFrameRunTime(runTime uint) {
 	this.frameRunTime = runTime * gtime.MillisecondN
-	log.Printf("set frame run time %v millisecond", runTime)
 }
 
 var srv *server
