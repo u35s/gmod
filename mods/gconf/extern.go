@@ -44,23 +44,55 @@ func ReadFile(file string) error {
 	return nil
 }
 
-func GetString(idx string) string {
-	return GetGroup(defaultGroup).GetString(idx)
+func String(idx string) (ret string) {
+	eachGroupBreak(func(g *group) bool {
+		if ret = g.GetString(idx); len(ret) > 0 {
+			return true
+		}
+		return false
+	})
+	return
 }
 
-func GetInt(idx string) int {
-	return GetGroup(defaultGroup).GetInt(idx)
+func Int(idx string) (ret int) {
+	eachGroupBreak(func(g *group) bool {
+		if ret = g.GetInt(idx); ret > 0 {
+			return true
+		}
+		return false
+	})
+	return
 }
 
-func GetUint(idx string) uint {
-	return GetGroup(defaultGroup).GetUint(idx)
+func Uint(idx string) (ret uint) {
+	eachGroupBreak(func(g *group) bool {
+		if ret = g.GetUint(idx); ret > 0 {
+			return true
+		}
+		return false
+	})
+	return
 }
 
-func GetFloat(idx string) float32 {
-	return GetGroup(defaultGroup).GetFloat(idx)
+func Float(idx string) (ret float32) {
+	eachGroupBreak(func(g *group) bool {
+		if ret = g.GetFloat(idx); ret > 0 {
+			return true
+		}
+		return false
+	})
+	return
 }
 
-func GetGroup(idx string) group {
+func eachGroupBreak(brk func(*group) bool) {
+	for _, group := range conf.groups {
+		if brk(&group) {
+			break
+		}
+	}
+}
+
+func Group(idx string) group {
 	if group, ok := conf.groups[idx]; ok {
 		return group
 	}

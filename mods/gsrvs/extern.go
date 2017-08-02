@@ -97,6 +97,11 @@ func Remove(srv *ConnectedServer) {
 				srvs.size--
 				log.Printf("%v,%v remove success,local addr %v,remote addr %v,index %v",
 					srv.Type, srv.Name, srv.Agent.Conn.LocalAddr(), srv.Agent.Conn.RemoteAddr(), i)
+				EachToConnectServer(func(to *ToConnectServer) {
+					if to.Type == srv.Type && to.Name == srv.Name && to.ID == srv.ID {
+						to.Ok = false
+					}
+				})
 				break
 			}
 		}
