@@ -36,5 +36,5 @@ func defaultRoute() {
 }
 
 func sendCmdToSession(send gcmd.Cmder) {
-	gsrvs.SendCmdToServer("session", "session", &send)
+	gsrvs.SendCmdToServer("session", "session", send)
 }

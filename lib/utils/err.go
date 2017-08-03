@@ -17,3 +17,11 @@ func DumpStack(name string, id uint) {
 		log.Print(buf.String())
 	}
 }
+
+func PrintStack() {
+	var buf bytes.Buffer
+	bs := make([]byte, 1<<12)
+	num := runtime.Stack(bs, false)
+	buf.Write(bs[:num])
+	log.Print(buf.String())
+}
