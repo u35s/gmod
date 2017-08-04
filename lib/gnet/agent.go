@@ -162,7 +162,12 @@ func (this *Agent) Close(err error) {
 }
 
 func (this *Agent) GetMsg() <-chan interface{} {
-	return this.reciveChannel
+	select {
+	case itfc := <-this.reciveChannel:
+		ch := make(chan interface{}, 1)
+		ch <- itfc
+		return ch
+	}
 }
 
 func (this *Agent) SendCmd(m interface{}) {

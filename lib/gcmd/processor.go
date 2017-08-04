@@ -13,7 +13,6 @@ const (
 )
 
 type processor struct {
-	buf bytes.Buffer
 }
 
 func (this *processor) Unmarshal(bts []byte) (interface{}, error) {
@@ -24,13 +23,13 @@ func (this *processor) unmarshal(bts []byte) (*CmdMessage, error) {
 	if len(bts) < packetHeadLen {
 		return nil, errors.New("bts too small")
 	}
-	this.buf.Write(bts)
+	buf := bytes.Buffer{}
+	buf.Write(bts)
 
 	msg := new(CmdMessage)
-	binRead(&this.buf, &msg.cmd)
-	binRead(&this.buf, &msg.param)
-	msg.Data = this.buf.Bytes()
-	this.buf.Reset()
+	binRead(&buf, &msg.cmd)
+	binRead(&buf, &msg.param)
+	msg.Data = buf.Bytes()
 	return msg, nil
 }
 
