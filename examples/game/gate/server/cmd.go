@@ -9,19 +9,12 @@ import (
 	"github.com/u35s/gmod/lib/gcmd"
 )
 
-var serverDelivers [255][255]func(*gcmd.CmdMessage)
-
-func serverRoute(cmd gcmd.Cmder, h func(*gcmd.CmdMessage)) {
-	cmd.Init()
-	serverDelivers[cmd.GetCmd()][cmd.GetParam()] = h
-}
-
-func deliverServerMsg(itfc interface{}) {
-	if msg, ok := itfc.(*gcmd.CmdMessage); ok {
-		if h := serverDelivers[msg.GetCmd()][msg.GetParam()]; h != nil {
+func serverRoute(cmd gcmd.Cmder, f func(*gcmd.CmdMessage)) {
+	gcmd.Route(cmd, func(h func(*gcmd.CmdMessage)) func(*gcmd.CmdMessage, ...interface{}) {
+		return func(msg *gcmd.CmdMessage, itfc ...interface{}) {
 			h(msg)
 		}
-	}
+	}(f))
 }
 
 func defaultServerRoute() {

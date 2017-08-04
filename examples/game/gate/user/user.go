@@ -37,7 +37,7 @@ func (this *user) deliverMsg() {
 		case itfc := <-this.Agent.GetMsg():
 			if msg, ok := itfc.(*gcmd.CmdMessage); ok {
 				log.Printf("deliver user %v msg,cmd %v,param %v", this.seqid, msg.GetCmd(), msg.GetParam())
-				deliver(this, msg)
+				gcmd.DeliverMsg(msg, this)
 			}
 		case err := <-this.Err:
 			this.destory(err)

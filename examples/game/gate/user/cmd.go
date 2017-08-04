@@ -9,21 +9,18 @@ import (
 	"github.com/u35s/gmod/mods/gsrvs"
 )
 
-var delivers [255][255]func(*user, *gcmd.CmdMessage)
-
-func route(cmd gcmd.Cmder, h func(*user, *gcmd.CmdMessage)) {
-	cmd.Init()
-	delivers[cmd.GetCmd()][cmd.GetParam()] = h
-}
-
-func deliver(u *user, msg *gcmd.CmdMessage) {
-	if h := delivers[msg.GetCmd()][msg.GetParam()]; h != nil {
-		h(u, msg)
-	}
+func userRoute(cmd gcmd.Cmder, f func(*gcmd.CmdMessage, *user)) {
+	gcmd.Route(cmd, func(h func(*gcmd.CmdMessage, *user)) func(*gcmd.CmdMessage, ...interface{}) {
+		return func(msg *gcmd.CmdMessage, itfc ...interface{}) {
+			if u, ok := itfc[0].(*user); ok {
+				h(msg, u)
+			}
+		}
+	}(f))
 }
 
 func defaultRoute() {
-	route(&testcmd.CmdUser_login{}, func(u *user, msg *gcmd.CmdMessage) {
+	userRoute(&testcmd.CmdUser_login{}, func(msg *gcmd.CmdMessage, u *user) {
 		var rev testcmd.CmdUser_login
 		json.Unmarshal(msg.Data, &rev)
 		u.accid = rev.Accid
@@ -31,10 +28,6 @@ func defaultRoute() {
 		send.Accid = rev.Accid
 		send.Seqid = u.seqid
 		log.Printf("user login,accid %v,seqid %v", rev.Accid, send.Seqid)
-		sendCmdToSession(&send)
+		gsrvs.SendCmdToServer("session", "session", &send)
 	})
-}
-
-func sendCmdToSession(send gcmd.Cmder) {
-	gsrvs.SendCmdToServer("session", "session", send)
 }

@@ -64,7 +64,7 @@ func (this *gateServer) dealServerMsg() {
 	for {
 		select {
 		case msg := <-this.serverMsgChannel:
-			deliverServerMsg(msg)
+			gcmd.DeliverMsg(msg)
 		default:
 			return
 		}
