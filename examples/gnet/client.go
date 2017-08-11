@@ -23,20 +23,21 @@ func main() {
 }
 func handleConn(conn net.Conn) {
 	log.Printf("connection server success,local addr %v, remote addr %v", conn.LocalAddr(), conn.RemoteAddr())
-	agent := gnet.NewAgent(conn, gcmd.NewProcessor())
+	run := true
+	agent := gnet.NewAgent(conn, gcmd.NewProcessor(), func(itfc interface{}) {
+		if msg, ok := itfc.(*gcmd.CmdMessage); ok {
+			var rev testcmd.CmdServer_chat
+			json.Unmarshal(msg.Data, &rev)
+			fmt.Printf("server say %v\n", rev.Cnt)
+		}
+	}, func(err error) {
+		run = false
+		log.Printf("agent error,%v\n", err)
+	})
 	var send testcmd.CmdServer_chat
 	send.Cnt = "hello"
 	agent.SendCmd(&send)
-	for {
-		select {
-		case itfc := <-agent.ReciveChannel:
-			if msg, ok := itfc.(*gcmd.CmdMessage); ok {
-				var rev testcmd.CmdServer_chat
-				json.Unmarshal(msg.Data, &rev)
-				fmt.Printf("server say %v\n", rev.Cnt)
-			}
-		case err := <-agent.Err:
-			log.Printf("agent error,%v\n", err)
-		}
+	for run {
+		time.Sleep(time.Second)
 	}
 }

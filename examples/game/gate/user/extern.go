@@ -10,7 +10,9 @@ var userm *userManager
 
 func NewVerifyUser() *user {
 	seqid++
-	return &user{seqid: seqid, loginTime: gtime.Time(), Err: make(chan error, 2)}
+	return &user{seqid: seqid, loginTime: gtime.Time(),
+		MsgChan: make(chan interface{}, 1<<10),
+		ErrChan: make(chan error, 2)}
 }
 
 func AddVerifyUser(u *user) {

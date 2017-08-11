@@ -22,21 +22,16 @@ func main() {
 }
 func handleConn(conn net.Conn) {
 	log.Printf("connection gate success,local addr %v, remote addr %v", conn.LocalAddr(), conn.RemoteAddr())
-	errChan := make(chan error, 1)
-	agent := gnet.NewAgent(conn, gcmd.NewProcessor(), func(err error) { errChan <- err })
+	agent := gnet.NewAgent(conn, gcmd.NewProcessor(), func(itfc interface{}) {
+		if msg, ok := itfc.(*gcmd.CmdMessage); ok {
+			deliverMsg(msg)
+		}
+	}, func(err error) {
+		log.Printf("agent error,%v\n", err)
+	})
 	var send testcmd.CmdUser_login
 	send.Accid = 1
 	agent.SendCmd(&send)
-	for {
-		select {
-		case itfc := <-agent.GetMsg():
-			if msg, ok := itfc.(*gcmd.CmdMessage); ok {
-				deliverMsg(msg)
-			}
-		case err := <-errChan:
-			log.Printf("agent error,%v\n", err)
-		}
-	}
 }
 
 func deliverMsg(msg *gcmd.CmdMessage) {

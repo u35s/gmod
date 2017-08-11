@@ -6,6 +6,8 @@ import (
 	"errors"
 	"net"
 	"sync"
+
+	"github.com/u35s/gmod/lib/utils"
 )
 
 const (
@@ -31,13 +33,13 @@ type Agent struct {
 	Conn    net.Conn
 	Process Processor
 
-	lock          sync.Mutex
-	unpackBuf     bytes.Buffer
-	read          packetRead
-	once          sync.Once
-	errHandler    func(error)
-	reciveChannel chan interface{}
-	sendChannel   chan interface{}
+	lock        sync.Mutex
+	unpackBuf   bytes.Buffer
+	read        packetRead
+	once        sync.Once
+	onErr       func(error)
+	onMessage   func(interface{})
+	sendChannel chan interface{}
 }
 
 func binRead(buf *bytes.Buffer, data interface{}) {
@@ -64,8 +66,7 @@ func (this *Agent) pack(bts []byte) []byte {
 	return buf.Bytes()
 }
 
-func (this *Agent) unpack(bts []byte, ch chan interface{}) {
-	this.unpackBuf.Write(bts)
+func (this *Agent) unpack() {
 	for {
 		if !this.read.hasHead {
 			if this.unpackBuf.Len() < packetHeadLen {
@@ -76,6 +77,7 @@ func (this *Agent) unpack(bts []byte, ch chan interface{}) {
 			this.read.parse()
 
 		}
+		//utils.Dbg("[agent],head read,%+v,buf len,%v", this.read, this.unpackBuf.Len())
 		if this.unpackBuf.Len() < int(this.read.size) {
 			break
 		}
@@ -94,13 +96,17 @@ func (this *Agent) unpack(bts []byte, ch chan interface{}) {
 			this.read.buf = nil
 		}
 		itfc, err := this.Process.Unmarshal(data)
-		if err == nil {
-			ch <- itfc
+		if err == nil && this.onMessage != nil {
+			this.onMessage(itfc)
+			//ch <- itfc
+		} else {
+			utils.Err("[agent],unmarshal err %v,onMsg %v", err, this.onMessage)
 		}
 	}
 }
 
 func (this *Agent) send() error {
+	var flow int
 	for send := range this.sendChannel {
 		if send == nil {
 			return errors.New("send is nil")
@@ -109,30 +115,39 @@ func (this *Agent) send() error {
 		if err != nil {
 			return err
 		}
-		bts = this.pack(bts)
-		_, err = this.Conn.Write(bts)
+		bts1 := this.pack(bts)
+		num, err := this.Conn.Write(bts1)
 		if err != nil {
 			return err
 		}
+
+		flow += num
+		//utils.Dbg("local %v,remote %v,send flow %v,",
+		//	this.Conn.LocalAddr(), this.Conn.RemoteAddr(), flow)
 	}
 	return nil
 }
 
 func (this *Agent) recive() error {
 	bts := make([]byte, 1<<16)
+	var flow int
 	for {
 		num, err := this.Conn.Read(bts)
 		if err != nil {
 			return err
 		}
-		this.unpack(bts[:num], this.reciveChannel)
+		flow += num
+		//utils.Dbg("local %v,remote %v,recive flow %v,",
+		//	this.Conn.LocalAddr(), this.Conn.RemoteAddr(), flow)
+		this.unpackBuf.Write(bts[:num])
+		this.unpack()
 	}
 }
 
 func (this *Agent) handleError(err error, end func()) {
 	this.once.Do(func() {
-		if this.errHandler != nil {
-			this.errHandler(err)
+		if this.onErr != nil {
+			this.onErr(err)
 		}
 		if end != nil {
 			end()
@@ -161,42 +176,23 @@ func (this *Agent) Close(err error) {
 	})
 }
 
-func (this *Agent) GetMsg() <-chan interface{} {
-	return this.reciveChannel
-	/*select {
-	case itfc := <-this.reciveChannel:
-		ch := make(chan interface{}, 1)
-		ch <- itfc
-		return ch
-	}*/
-}
-
 func (this *Agent) SendCmd(m interface{}) {
 	this.sendChannel <- m
 }
 
-func (this *Agent) SetReciveChannel(ch chan interface{}) {
-	this.lock.Lock()
-	defer this.lock.Unlock()
-	for {
-		select {
-		case msg := <-this.reciveChannel:
-			ch <- msg
-		default:
-			this.reciveChannel = ch
-			return
-		}
-	}
+func (this *Agent) SetOnMessage(onMsg func(interface{})) {
+	this.onMessage = onMsg
 }
 
-func NewAgent(conn net.Conn, process Processor, errHandler func(error)) *Agent {
+func NewAgent(conn net.Conn, process Processor,
+	onMsg func(interface{}), onErr func(error)) *Agent {
 	g := &Agent{
 		Conn: conn,
 
-		Process:       process,
-		errHandler:    errHandler,
-		reciveChannel: make(chan interface{}, 1<<10),
-		sendChannel:   make(chan interface{}, 1<<10),
+		Process:     process,
+		onErr:       onErr,
+		onMessage:   onMsg,
+		sendChannel: make(chan interface{}, 1<<10),
 	}
 	g.run()
 	return g

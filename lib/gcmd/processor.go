@@ -30,6 +30,8 @@ func (this *processor) unmarshal(bts []byte) (*CmdMessage, error) {
 	binRead(&buf, &msg.cmd)
 	binRead(&buf, &msg.param)
 	msg.Data = buf.Bytes()
+	//utils.Dbg("[gcmd],unmarshal,cmd %v,param %v,len %v,data %v,",
+	//	msg.GetCmd(), msg.GetParam(), len(msg.Data), msg.Data)
 	return msg, nil
 }
 
@@ -52,6 +54,8 @@ func (this *processor) marshal(msg Cmder) ([]byte, error) {
 	binWrite(buf, msg.GetCmd())
 	binWrite(buf, msg.GetParam())
 	binWrite(buf, bts)
+	//utils.Dbg("[gcmd],marshal,cmd %v,param %v,len %v,data %v,",
+	//	msg.GetCmd(), msg.GetParam(), len(bts), bts)
 	return buf.Bytes(), nil
 }
 

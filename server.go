@@ -1,13 +1,13 @@
 package gmod
 
 import (
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/u35s/gmod/lib/gtime"
+	"github.com/u35s/gmod/lib/utils"
 )
 
 const frameWarningTime = 100 * gtime.MillisecondN
@@ -53,7 +53,7 @@ func (this *server) init() {
 	for i := range this.mods {
 		this.mods[i].Init()
 	}
-	log.Printf("server mod init,time %v second", timer.Elapse()/gtime.SecondN)
+	utils.Inf("server mod init,time %v second", timer.Elapse()/gtime.SecondN)
 }
 
 func (this *server) wait() bool {
@@ -77,7 +77,7 @@ func (this *server) end() {
 	for i := range this.mods {
 		this.mods[i].End()
 	}
-	log.Printf("server mod end,time %v second", timer.Elapse()/gtime.SecondN)
+	utils.Inf("server mod end,time %v second", timer.Elapse()/gtime.SecondN)
 }
 
 func (this *server) signal() {
@@ -113,7 +113,7 @@ func (this *server) loop() {
 			sleep := this.frameRunTime - e
 			time.Sleep(time.Duration(sleep))
 		} else if e > frameWarningTime {
-			log.Printf("this frame run time in %v millisecond", e/gtime.MillisecondN)
+			utils.Wrn("this frame run time in %v millisecond", e/gtime.MillisecondN)
 		}
 
 	}
@@ -121,7 +121,7 @@ func (this *server) loop() {
 
 func (this *server) setState(state serverState) {
 	this.state = state
-	log.Printf("set server sate %v", state.String())
+	utils.Dbg("set server sate %v", state.String())
 }
 
 func (this *server) setFrameRunTime(runTime uint) {

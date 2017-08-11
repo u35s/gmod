@@ -47,21 +47,26 @@ func (this *sessionServer) listenTo(addr string) error {
 
 func (this *sessionServer) handleConn(conn net.Conn) {
 	srv := &gsrvs.ConnectedServer{}
-	srv.Agent = gnet.NewAgent(conn, gcmd.NewProcessor(), func(err error) {
+	okChan := make(chan uint, 1)
+	srv.Agent = gnet.NewAgent(conn, gcmd.NewProcessor(), func(itfc interface{}) {
+		okChan <- 1
+		if msg, ok := itfc.(*gcmd.CmdMessage); ok {
+			var rev testcmd.CmdServer_establishConnection
+			json.Unmarshal(msg.Data, &rev)
+			srv.Type, srv.Name = rev.Type, rev.Name
+			gsrvs.Add(srv)
+		}
+		srv.Agent.SetOnMessage(func(itfc interface{}) {
+			this.serverMsgChannel <- itfc
+		})
+	}, func(err error) {
 		gsrvs.Remove(srv)
 		log.Printf("server %v,%v remote addr %v error %v",
 			srv.Type, srv.Name, srv.Agent.Conn.RemoteAddr(), err)
 	})
 
 	select {
-	case itfc := <-srv.Agent.GetMsg():
-		if msg, ok := itfc.(*gcmd.CmdMessage); ok {
-			var rev testcmd.CmdServer_establishConnection
-			json.Unmarshal(msg.Data, &rev)
-			srv.Type, srv.Name = rev.Type, rev.Name
-			srv.Agent.SetReciveChannel(this.serverMsgChannel)
-			gsrvs.Add(srv)
-		}
+	case <-okChan:
 	case <-time.After(2 * time.Second):
 		err := errors.New("connection verify time out")
 		log.Printf("%v", err)

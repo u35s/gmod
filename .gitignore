@@ -3,3 +3,5 @@
 examples/game/client/client
 examples/game/gate/gate
 examples/game/session/session
+examples/gnet/client
+examples/gnet/server

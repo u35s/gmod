@@ -10,8 +10,9 @@ import (
 )
 
 type user struct {
-	Agent *gnet.Agent
-	Err   chan error
+	Agent   *gnet.Agent
+	ErrChan chan error
+	MsgChan chan interface{}
 
 	loginTime uint
 
@@ -27,19 +28,19 @@ func (this *user) verify() {
 	this.refresh()
 
 	if this.loginTime+gtime.MinuteS < gtime.Time() {
-		this.Err <- errors.New("verify time out")
+		this.ErrChan <- errors.New("verify time out")
 	}
 }
 
 func (this *user) deliverMsg() {
 	for {
 		select {
-		case itfc := <-this.Agent.GetMsg():
+		case itfc := <-this.MsgChan:
 			if msg, ok := itfc.(*gcmd.CmdMessage); ok {
 				log.Printf("deliver user %v msg,cmd %v,param %v", this.seqid, msg.GetCmd(), msg.GetParam())
 				gcmd.DeliverMsg(msg, this)
 			}
-		case err := <-this.Err:
+		case err := <-this.ErrChan:
 			this.destory(err)
 			return
 		default:
