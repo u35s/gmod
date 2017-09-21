@@ -2,6 +2,8 @@ package gtime
 
 import "time"
 
+type uint = uint64
+
 const (
 	NanosecondN  uint = 1                   //纳秒
 	MicrosecondN      = 1000 * NanosecondN  //微妙

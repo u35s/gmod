@@ -6,6 +6,8 @@ import (
 	"github.com/u35s/gmod/lib/utils"
 )
 
+type uint = uint64
+
 type config struct {
 	groups map[string]group
 }

@@ -10,6 +10,8 @@ import (
 	"github.com/u35s/gmod/lib/utils"
 )
 
+type uint = uint64
+
 const frameWarningTime = 100 * gtime.MillisecondN
 const baseFrame uint = 40
 

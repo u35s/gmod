@@ -6,6 +6,8 @@ import (
 	"github.com/u35s/gmod/lib/gnet"
 )
 
+type uint = uint64
+
 type ServerBase struct {
 	ID   uint
 	Type string
