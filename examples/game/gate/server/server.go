@@ -23,7 +23,7 @@ func (this *gateServer) Init() {
 	defaultServerRoute()
 	this.tp, this.name = "gate", "gate"
 	this.serverMsgChannel = make(chan interface{}, 1<<16)
-	gsrvs.AddToConnectServer("session", "session", ":8001")
+	gsrvs.AddToConnectServer("session", "session", ":8001", "tcp")
 }
 
 func (this *gateServer) Wait() bool {

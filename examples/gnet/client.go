@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	conn, err := net.DialTimeout("tcp", ":8100", 2*time.Second)
+	conn, err := net.DialTimeout("udp", ":8100", 2*time.Second)
 	if err != nil {
 		log.Print(err)
 		return

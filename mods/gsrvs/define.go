@@ -22,12 +22,14 @@ type ConnectedServer struct {
 type ConnectedServerSlc []*ConnectedServer
 
 type ToListenAddr struct {
+	Net  string
 	Addr string
 	Ok   bool
 }
 
 type ToConnectServer struct {
 	ServerBase
+	Net       string
 	Addr      string
 	LocalType string
 	LocalName string

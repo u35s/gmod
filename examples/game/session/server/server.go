@@ -23,7 +23,7 @@ type sessionServer struct {
 func (this *sessionServer) Init() {
 	defaultServerRoute()
 	this.serverMsgChannel = make(chan interface{}, 1<<16)
-	gsrvs.AddToListenAddr(":8001")
+	gsrvs.AddToListenAddr(":8001", "tcp")
 }
 
 func (this *sessionServer) Wait() bool {

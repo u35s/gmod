@@ -35,8 +35,8 @@ func SendCmdToServer(tp, name string, msg interface{}) {
 	srvs.lock.RUnlock()
 }
 
-func AddToListenAddr(addr string) {
-	srvs.toListen = append(srvs.toListen, &ToListenAddr{Addr: addr})
+func AddToListenAddr(addr, net string) {
+	srvs.toListen = append(srvs.toListen, &ToListenAddr{Addr: addr, Net: net})
 }
 
 func EachToListenAddr(f func(*ToListenAddr)) {
@@ -45,12 +45,13 @@ func EachToListenAddr(f func(*ToListenAddr)) {
 	}
 }
 
-func AddToConnectServerWithID(id uint, tp, name, addr string) {
-	srvs.toConnect = append(srvs.toConnect, &ToConnectServer{ServerBase: ServerBase{Type: tp, Name: name, ID: id}, Addr: addr})
+func AddToConnectServerWithID(id uint, tp, name, addr, net string) {
+	srvs.toConnect = append(srvs.toConnect, &ToConnectServer{ServerBase: ServerBase{Type: tp, Name: name, ID: id},
+		Addr: addr, Net: net})
 }
 
-func AddToConnectServer(tp, name, addr string) {
-	AddToConnectServerWithID(0, tp, name, addr)
+func AddToConnectServer(tp, name, addr, net string) {
+	AddToConnectServerWithID(0, tp, name, addr, net)
 }
 
 func EachToConnectServer(f func(*ToConnectServer)) {

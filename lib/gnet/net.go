@@ -1,51 +1,93 @@
 package gnet
 
 import (
-	"errors"
 	"net"
 	"time"
 
 	"github.com/u35s/gmod/lib/utils"
+	"github.com/u35s/rudp"
 )
 
-func ConnectTo(addr string) (*net.TCPConn, error) {
-	c, err := net.DialTimeout("tcp", addr, 2*time.Second)
-	if err != nil {
-		return nil, err
+func Dial(network, addr string) (net.Conn, error) {
+	if network == "udp" {
+		laddr := net.UDPAddr{IP: net.IPv4zero, Port: 0}
+		conn, err := net.DialUDP("udp", &laddr, getUDPAddr(addr))
+		if err != nil {
+			return nil, err
+		}
+		return rudp.NewConn(conn, rudp.New()), nil
 	}
-	conn, ok := c.(*net.TCPConn)
-	if !ok {
-		return nil, errors.New("conn to tcpconn err")
-	}
-	conn.SetKeepAlivePeriod(time.Second)
-	conn.SetKeepAlive(true)
-	return conn, nil
+
+	return net.DialTimeout(network, addr, 5*time.Second)
 }
 
-func Listen(addr string) (*net.TCPListener, error) {
-	tcpAddr, err := net.ResolveTCPAddr("tcp4", addr)
+func getUDPAddr(addr string) *net.UDPAddr {
+	ip := "0.0.0.0"
+	port := ""
+	slc := utils.Split(addr, ":")
+	if len(slc) == 1 {
+		port = slc[0]
+	} else if len(slc) == 2 {
+		ip = slc[0]
+		port = slc[1]
+	}
+	return &net.UDPAddr{IP: net.ParseIP(ip), Port: utils.Atoi(port)}
+}
+
+func ConnectTo(network, addr string) (net.Conn, error) {
+	if network == "udp" {
+		laddr := net.UDPAddr{IP: net.IPv4zero, Port: 0}
+		conn, err := net.DialUDP("udp", &laddr, getUDPAddr(addr))
+		if err != nil {
+			return nil, err
+		}
+		return rudp.NewConn(conn, rudp.New()), nil
+	}
+	c, err := net.DialTimeout(network, addr, 1*time.Second)
 	if err != nil {
-		utils.Err("resolve tcp addr  %v err,%v", addr, err)
 		return nil, err
 	}
-	listener, err := net.ListenTCP("tcp", tcpAddr)
-	if err != nil {
-		utils.Err("listen tcp %v err,%v", addr, err)
+	if tcp, ok := c.(*net.TCPConn); ok {
+		tcp.SetKeepAlivePeriod(time.Second)
+		tcp.SetKeepAlive(true)
+	}
+	return c, nil
+}
+
+func Listen(network, addr string) (net.Listener, error) {
+	check := func(err error) bool {
+		if err != nil {
+			utils.Err("listen %v %v err,%v", network, addr, err)
+			return true
+		}
+		utils.Inf("listen %v %v success", network, addr)
+		return false
+	}
+	if network == "udp" {
+		conn, err := net.ListenUDP("udp", getUDPAddr(addr))
+		if check(err) {
+			return nil, err
+		}
+		return rudp.NewListener(conn), nil
+	}
+	listener, err := net.Listen(network, addr)
+	if check(err) {
 		return nil, err
 	}
-	utils.Inf("listen %v success", addr)
 	return listener, nil
 }
 
-func Accept(listener *net.TCPListener, f func(conn net.Conn)) {
+func Accept(listener net.Listener, f func(conn net.Conn)) {
 	for {
-		conn, err := listener.AcceptTCP()
+		conn, err := listener.Accept()
 		if err != nil {
 			utils.Err("accept listener %v err,%v", listener.Addr(), err)
 			break
 		}
-		conn.SetKeepAlivePeriod(time.Second)
-		conn.SetKeepAlive(true)
+		if tcp, ok := conn.(*net.TCPConn); ok {
+			tcp.SetKeepAlivePeriod(time.Second)
+			tcp.SetKeepAlive(true)
+		}
 		go f(conn)
 	}
 }
