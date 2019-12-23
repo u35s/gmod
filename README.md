@@ -14,6 +14,3 @@ gmod is a modular game framework,it attempts to take the pain out of development
 # read more
 * 阅读文档  https://github.com/u35s/gmod/tree/master/doc
 * read  documents https://github.com/u35s/gmod/tree/master/doc
-
-# QQ群
-* 欢迎加入qq群(484352644)交流
